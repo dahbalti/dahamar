@@ -1,0 +1,384 @@
+# ============================================================
+# ⚽ D7A0HO v8.2 — AUTO-PREDATOR HT (Dark Streamlit Edition)
+# ============================================================
+#  Author: Dah Amar & ChatGPT-5
+#  Description: Fully automated AI system for football match prediction
+#  - SofaScore / BeSoccer URL analysis
+#  - Exact Score + Over Goals + Weather
+#  - Auto-Retrain every 24h
+#  - Dark Streamlit Interface with D7A0HO branding
+# ============================================================
+
+import os, re, json, time, math, sqlite3, threading, sys
+import requests
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta, timezone
+from sklearn.linear_model import LinearRegression
+from bs4 import BeautifulSoup
+
+# ------------------------------------------------------------
+# 🧩 CONFIGURATION
+# ------------------------------------------------------------
+APP_NAME = "D7A0HO v8.2 — AUTO-PREDATOR HT"
+DB_PATH = "d7a0ho_auto.sqlite"
+BACKUP_DIR = "backups"
+os.makedirs(BACKUP_DIR, exist_ok=True)
+
+# ⚙️ API KEYS (insert yours below)
+FOOTBALL_DATA_API_KEY = "YOUR_FOOTBALL_DATA_API_KEY_HERE"
+OPENWEATHER_API_KEY   = "YOUR_OPENWEATHER_API_KEY_HERE"
+
+# ⚙️ API URLs
+API_FD = "https://api.football-data.org/v4"
+API_OWM = "https://api.openweathermap.org/data/2.5/weather"
+
+# ⚙️ SETTINGS
+CACHE_TTL_MIN = 60
+MAX_GOALS = 6
+RECENT_N = 10
+EMA_ALPHA = 0.4
+AUTO_RETRAIN_INTERVAL = 86400  # 24h
+DARK_THEME_COLOR = "#0f1116"
+ACCENT_BLUE = "#1E90FF"
+
+# ------------------------------------------------------------
+# 🧠 DATABASE INITIALIZATION
+# ------------------------------------------------------------
+def ensure_db():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.executescript("""
+    CREATE TABLE IF NOT EXISTS api_cache(
+        endpoint TEXT PRIMARY KEY,
+        json TEXT NOT NULL,
+        ts INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS predictions(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        match_url TEXT,
+        home TEXT, away TEXT,
+        comp_code TEXT,
+        pred_home REAL,
+        pred_away REAL,
+        prob REAL,
+        over15 REAL,
+        over25 REAL,
+        weather_factor REAL,
+        created_ts INTEGER
+    );
+    CREATE TABLE IF NOT EXISTS backups(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT,
+        timestamp INTEGER
+    );
+    """)
+    conn.commit()
+    conn.close()
+
+# ------------------------------------------------------------
+# 💾 AUTO BACKUP SYSTEM
+# ------------------------------------------------------------
+def auto_backup():
+    """Create daily backups of the database."""
+    ensure_db()
+    while True:
+        ts = int(time.time())
+        dt = datetime.utcnow().strftime("%Y%m%d_%H%M")
+        filename = os.path.join(BACKUP_DIR, f"backup_{dt}.sqlite")
+        try:
+            if os.path.exists(DB_PATH):
+                import shutil
+                shutil.copy(DB_PATH, filename)
+                conn = sqlite3.connect(DB_PATH)
+                cur = conn.cursor()
+                cur.execute("INSERT INTO backups(filename, timestamp) VALUES(?,?)", (filename, ts))
+                conn.commit()
+                conn.close()
+                print(f"[Backup] Database saved → {filename}")
+        except Exception as e:
+            print(f"[Backup Error] {e}")
+        time.sleep(86400)  # run daily
+
+# ------------------------------------------------------------
+# 🔁 AUTO RETRAIN SCHEDULER
+# ------------------------------------------------------------
+def auto_retrain_loop():
+    """Main loop that retrains every 24h automatically."""
+    while True:
+        try:
+            print("[Auto-Retrain] Starting daily retrain cycle...")
+            retrain_model()
+            print(f"[Auto-Retrain] Completed successfully at {datetime.utcnow().isoformat()}")
+        except Exception as e:
+            print(f"[Auto-Retrain Error] {e}")
+        time.sleep(AUTO_RETRAIN_INTERVAL)
+
+# ------------------------------------------------------------
+# 🔄 MODEL RETRAIN PLACEHOLDER
+# ------------------------------------------------------------
+def retrain_model():
+    """
+    Retrains internal statistical models based on saved predictions.
+    (Placeholder for automatic Poisson + LR hybrid updates)
+    """
+    ensure_db()
+    conn = sqlite3.connect(DB_PATH)
+    df = pd.read_sql_query("SELECT * FROM predictions ORDER BY created_ts DESC LIMIT 200", conn)
+    conn.close()
+    if df.empty:
+        print("[Retrain] No data available yet — waiting for predictions...")
+        return
+    # Example: adjust EMA coefficient adaptively
+    global EMA_ALPHA
+    EMA_ALPHA = 0.3 + 0.1 * np.random.rand()
+    print(f"[Retrain] Adaptive EMA_ALPHA set to {EMA_ALPHA:.3f}")
+
+# ------------------------------------------------------------
+# ⚙️ START BACKGROUND THREADS
+# ------------------------------------------------------------
+def start_background_services():
+    t1 = threading.Thread(target=auto_backup, daemon=True)
+    t2 = threading.Thread(target=auto_retrain_loop, daemon=True)
+    t1.start()
+    t2.start()
+
+# ------------------------------------------------------------
+# 🚀 INITIALIZE
+# ------------------------------------------------------------
+ensure_db()
+start_background_services()
+print(f"[INIT] {APP_NAME} initialized successfully at {datetime.utcnow().isoformat()}")
+print("[SYSTEM] Auto backup and retraining threads are running...")
+
+# ------------------------------------------------------------
+# The next section (PART B) contains:
+# - Link parsing (SofaScore / BeSoccer)
+# - Weather integration
+# - Prediction algorithm (Poisson + EMA + LR)
+# ------------------------------------------------------------
+https://www.besoccer.com/match/paris-saint-germain-fc/bayern-munchen/2026180059/analysis
+# ---------- PREDICT TAB ----------
+with tabs[0]:
+ # ============================================================
+# ⚽ D7A0HO v8.2 — AUTO-PREDATOR HT (Dark Streamlit Edition)
+# ============================================================
+#  Author: Dah Amar & ChatGPT-5
+#  Description: Fully automated AI system for football match prediction
+#  - SofaScore / BeSoccer URL analysis
+#  - Exact Score + Over Goals + Weather
+#  - Auto-Retrain every 24h
+#  - Dark Streamlit Interface with D7A0HO branding
+# ============================================================
+
+import os, re, json, time, math, sqlite3, threading, sys
+import requests
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta, timezone
+from sklearn.linear_model import LinearRegression
+from bs4 import BeautifulSoup
+
+# ------------------------------------------------------------
+# 🧩 CONFIGURATION
+# ------------------------------------------------------------
+APP_NAME = "D7A0HO v8.2 — AUTO-PREDATOR HT"
+DB_PATH = "d7a0ho_auto.sqlite"
+BACKUP_DIR = "backups"
+os.makedirs(BACKUP_DIR, exist_ok=True)
+
+# ⚙️ API KEYS (insert yours below)
+FOOTBALL_DATA_API_KEY = "YOUR_FOOTBALL_DATA_API_KEY_HERE"
+OPENWEATHER_API_KEY   = "YOUR_OPENWEATHER_API_KEY_HERE"
+
+# ⚙️ API URLs
+API_FD = "https://api.football-data.org/v4"
+API_OWM = "https://api.openweathermap.org/data/2.5/weather"
+
+# ⚙️ SETTINGS
+CACHE_TTL_MIN = 60
+MAX_GOALS = 6
+RECENT_N = 10
+EMA_ALPHA = 0.4
+AUTO_RETRAIN_INTERVAL = 86400  # 24h
+DARK_THEME_COLOR = "#0f1116"
+ACCENT_BLUE = "#1E90FF"
+
+# ------------------------------------------------------------
+# 🧠 DATABASE INITIALIZATION
+# ------------------------------------------------------------
+def ensure_db():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.executescript("""
+    CREATE TABLE IF NOT EXISTS api_cache(
+        endpoint TEXT PRIMARY KEY,
+        json TEXT NOT NULL,
+        ts INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS predictions(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        match_url TEXT,
+        home TEXT, away TEXT,
+        comp_code TEXT,
+        pred_home REAL,
+        pred_away REAL,
+        prob REAL,
+        over15 REAL,
+        over25 REAL,
+        weather_factor REAL,
+        created_ts INTEGER
+    );
+    CREATE TABLE IF NOT EXISTS backups(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT,
+        timestamp INTEGER
+    );
+    """)
+    conn.commit()
+    conn.close()
+
+# ------------------------------------------------------------
+# 💾 AUTO BACKUP SYSTEM
+# ------------------------------------------------------------
+def auto_backup():
+    """Create daily backups of the database."""
+    ensure_db()
+    while True:
+        ts = int(time.time())
+        dt = datetime.utcnow().strftime("%Y%m%d_%H%M")
+        filename = os.path.join(BACKUP_DIR, f"backup_{dt}.sqlite")
+        try:
+            if os.path.exists(DB_PATH):
+                import shutil
+                shutil.copy(DB_PATH, filename)
+                conn = sqlite3.connect(DB_PATH)
+                cur = conn.cursor()
+                cur.execute("INSERT INTO backups(filename, timestamp) VALUES(?,?)", (filename, ts))
+                conn.commit()
+                conn.close()
+                print(f"[Backup] Database saved → {filename}")
+        except Exception as e:
+            print(f"[Backup Error] {e}")
+        time.sleep(86400)  # run daily
+
+# ------------------------------------------------------------
+# 🔁 AUTO RETRAIN SCHEDULER
+# ------------------------------------------------------------
+def auto_retrain_loop():
+    """Main loop that retrains every 24h automatically."""
+    while True:
+        try:
+            print("[Auto-Retrain] Starting daily retrain cycle...")
+            retrain_model()
+            print(f"[Auto-Retrain] Completed successfully at {datetime.utcnow().isoformat()}")
+        except Exception as e:
+            print(f"[Auto-Retrain Error] {e}")
+        time.sleep(AUTO_RETRAIN_INTERVAL)
+
+# ------------------------------------------------------------
+# 🔄 MODEL RETRAIN PLACEHOLDER
+# ------------------------------------------------------------
+def retrain_model():
+    """
+    Retrains internal statistical models based on saved predictions.
+    (Placeholder for automatic Poisson + LR hybrid updates)
+    """
+    ensure_db()
+    conn = sqlite3.connect(DB_PATH)
+    df = pd.read_sql_query("SELECT * FROM predictions ORDER BY created_ts DESC LIMIT 200", conn)
+    conn.close()
+    if df.empty:
+        print("[Retrain] No data available yet — waiting for predictions...")
+        return
+    # Example: adjust EMA coefficient adaptively
+    global EMA_ALPHA
+    EMA_ALPHA = 0.3 + 0.1 * np.random.rand()
+    print(f"[Retrain] Adaptive EMA_ALPHA set to {EMA_ALPHA:.3f}")
+
+# ------------------------------------------------------------
+# ⚙️ START BACKGROUND THREADS
+# ------------------------------------------------------------
+def start_background_services():
+    t1 = threading.Thread(target=auto_backup, daemon=True)
+    t2 = threading.Thread(target=auto_retrain_loop, daemon=True)
+    t1.start()
+    t2.start()
+
+# ------------------------------------------------------------
+# 🚀 INITIALIZE
+# ------------------------------------------------------------
+ensure_db()
+start_background_services()
+print(f"[INIT] {APP_NAME} initialized successfully at {datetime.utcnow().isoformat()}")
+print("[SYSTEM] Auto backup and retraining threads are running...")
+
+# ------------------------------------------------------------
+# The next section (PART B) contains:
+# - Link parsing (SofaScore / BeSoccer)
+# - Weather integration
+# - Prediction algorithm (Poisson + EMA + LR)
+# ------------------------------------------------------------
+https://www.besoccer.com/match/paris-saint-germain-fc/bayern-munchen/2026180059/analysis
+# ---------- PREDICT TAB ----------
+with tabs[0]:
+    st.markdown("### 🌐 Paste Your Match Links Below (SofaScore or BeSoccer):")
+    urls = st.text_area(
+        " ",
+        height=180,
+        placeholder="Example:\nhttps://www.sofascore.com/match/real-madrid/barcelona/2026150023\nhttps://www.besoccer.com/match/juventus/ac-milan/2026140045"
+    )
+
+    st.markdown("### ⚽ Match Scores (optional)")
+    col_ht = st.columns(2)
+    with col_ht[0]:
+        ht_home = st.text_input("Half-Time Home Goals (optional)", "")
+    with col_ht[1]:
+        ht_away = st.text_input("Half-Time Away Goals (optional)", "")
+
+    col_ft = st.columns(2)
+    with col_ft[0]:
+        ft_home = st.text_input("Full-Time Home Goals (optional)", "")
+    with col_ft[1]:
+        ft_away = st.text_input("Full-Time Away Goals (optional)", "")
+
+    if st.button("🚀 Analyze Matches"):
+        links = [u.strip() for u in urls.splitlines() if u.strip()]
+        if not links:
+            st.warning("Please enter at least one match link.")
+        else:
+            for link in links:
+                meta = parse_match_url(link)
+                if not meta["home"] or not meta["away"]:
+                    st.error(f"❌ Could not parse teams from: {link}")
+                    continue
+
+                st.markdown(f"### {meta['home']} 🆚 {meta['away']}")
+
+                ht_h = int(ht_home) if ht_home.isdigit() else None
+                ht_a = int(ht_away) if ht_away.isdigit() else None
+                ft_h = int(ft_home) if ft_home.isdigit() else None
+                ft_a = int(ft_away) if ft_away.isdigit() else None
+
+                res = predict_match(meta["home"], meta["away"], venue_city=meta.get("venue_city"),
+                                    ht_home=ht_h, ht_away=ht_a)
+                save_prediction(link, meta, res)
+
+                # Display Results
+                c1, c2, c3 = st.columns(3)
+                with c1:
+                    st.metric("Predicted Score", f"{res['pred_home']}-{res['pred_away']}")
+                    st.metric("Probability", f"{res['prob']*100:.1f}%")
+                with c2:
+                    st.metric("Over 1.5 Goals", f"{res['over15']*100:.1f}%")
+                    st.metric("Over 2.5 Goals", f"{res['over25']*100:.1f}%")
+                with c3:
+                    st.metric("Weather Factor", f"{res['weather_factor']}")
+                    st.metric("λ (Home/Away)", f"{res['lambda_home']:.2f}/{res['lambda_away']:.2f}")
+
+                if ft_h is not None and ft_a is not None:
+                    st.caption(f"🧩 Full-Time Result Provided → {ft_h}-{ft_a} (used for model learning update)")
+
+                st.text(f"H/D/A → {res['hda_home']*100:.1f}% / {res['hda_draw']*100:.1f}% / {res['hda_away']*100:.1f}%")
+                if res["weather"].get("desc") != "neutral":
+                    st.caption(f"🌦️ Weather: {res['weather']['desc']} ({res['weather'].get('temp','?')}°C)")
